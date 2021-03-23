@@ -23,6 +23,7 @@ public class AdminController {
     @GetMapping()
     private String userList(Model model){
         model.addAttribute("users", userService.userList());
+        model.addAttribute("user", new User());
         return "admin";
     }
 
@@ -58,6 +59,7 @@ public class AdminController {
 
     }
 
+
     @DeleteMapping("/{id}/delete")
     public String deleteUser(@PathVariable("id") Long id){
         userService.removeUser(id);
@@ -68,5 +70,26 @@ public class AdminController {
     public String editUser(Model model, @PathVariable("id") Long id){
         model.addAttribute("userById", userService.getUserById(id));
         return "user-edit";
+    }
+
+    @PostMapping("/update/{id}")
+    public String updateUser(@PathVariable Long id,@ModelAttribute("user") User user, @RequestParam(required = false) boolean adminRole,
+                             @RequestParam(required = false) boolean userRole){
+
+        Set<Role> roles = new HashSet<>();
+
+        if (adminRole){
+            Role role1 = userService.getRoleByName("ROLE_ADMIN");
+            roles.add(role1);
+        }
+        if (userRole){
+            Role role2 = userService.getRoleByName("ROLE_USER");
+            roles.add(role2);
+        }
+
+        user.setRoles(roles);
+        userService.addUser(user);
+
+        return "redirect:/admin";
     }
 }
